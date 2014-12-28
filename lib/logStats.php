@@ -51,6 +51,48 @@ class logStats
 		return $result;
 	}
 
+	public function messagesDay()
+	{
+		$messages = $this->dbh->getMessagesByDay();
+
+		$result = [];
+		foreach ($messages as $message)
+		{
+			$date = new \DateTime($message['d']);
+			$result['messages'][$message['d']] = [
+				'y' => $date->format('Y'),
+				'm' => $date->format('n') - 1,
+				'd' => $date->format('d'),
+				'c' => $message['c']
+			];
+		}
+
+		return $result;
+	}
+
+	public function firstMsgOfDay()
+	{
+		$messages = $this->dbh->getFirstMsgOfDayBySender();
+
+		$firstSender = current($messages)['sender'];
+		$result = [];
+		foreach ($messages as $message)
+		{
+			$date = new \DateTime($message['d']);
+			$result['messages'][$message['d']] = [
+				'sender' => $message['sender'],
+				'y'      => $date->format('Y'),
+				'm'      => $date->format('n') - 1,
+				'd'      => $date->format('d'),
+				'p'      => $firstSender == $message['sender'] ? 1 : -1
+			];
+		}
+
+		unset($messages);
+
+		return $result;
+	}
+
 	public function wordCloud($count, $minLength)
 	{
 		$output = $this->dbh->getWordsPerSender($minLength);

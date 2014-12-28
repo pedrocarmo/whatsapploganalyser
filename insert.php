@@ -4,5 +4,5 @@ require_once (__DIR__ . "/include.php");
 
 $logHandler = new \lib\logHandler($dbh);
 
-echo $logHandler->parseLog(__DIR__ . "/logs/2014-11-09.txt");
+echo $logHandler->parseLog(__DIR__ . "/logs/whatsapp-2014-11-20.txt");
 

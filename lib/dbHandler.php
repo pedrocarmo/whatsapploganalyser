@@ -79,6 +79,35 @@ class dbHandler {
 		return $sth->fetchAll();
 	}
 
+	public function getMessagesByDay ()
+	{
+		$sth = $this->pdo->prepare("
+			SELECT DATE(`tstamp`) AS d,
+				COUNT( `id` ) AS c
+			FROM  `messages`
+			GROUP BY d
+		");
+
+		$sth->execute();
+
+		return $sth->fetchAll();
+	}
+
+	public function getFirstMsgOfDayBySender ()
+	{
+		$sth = $this->pdo->prepare("
+			SELECT *, DATE(`tstamp`) AS `d`
+			FROM `messages`
+			WHERE HOUR(`tstamp`) > 5
+			GROUP BY `d`
+			ORDER BY `tstamp` ASC
+		");
+
+		$sth->execute();
+
+		return $sth->fetchAll();
+	}
+
 	public function getWordsPerSender($minLenght = 4)
 	{
 		$sth = $this->pdo->prepare("

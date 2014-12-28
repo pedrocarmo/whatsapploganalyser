@@ -16,7 +16,8 @@ $logStats = new \lib\logStats($dbh);
 	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 
 	<script type="text/javascript">
-		google.load("visualization", "1", {packages:["corechart"]});
+		google.load("visualization", "1.1", {packages:["corechart", "calendar"]});
+
 		google.setOnLoadCallback(drawChartHour);
 		function drawChartHour() {
 			var data = google.visualization.arrayToDataTable([
@@ -124,13 +125,82 @@ $logStats = new \lib\logStats($dbh);
 
 		chart.draw(data, options);
 
-	}
+		}
+
+		google.setOnLoadCallback(drawChartCalendarCount);
+		function drawChartCalendarCount() {
+			var dataTable = new google.visualization.DataTable();
+			dataTable.addColumn({ type: 'date', id: 'Date' });
+			dataTable.addColumn({ type: 'number', id: 'Message Count' });
+			dataTable.addRows([
+				<?php
+					$messagesDay = $logStats->messagesDay();
+
+					foreach ($messagesDay['messages'] as $message)
+					{
+						echo " [ new Date({$message['y']}, {$message['m']}, {$message['d']}), {$message['c']} ], ";
+					}
+
+					//clear memory
+					unset($messagesDay);
+				?>
+			]);
+
+			var chart = new google.visualization.Calendar(document.getElementById('calendar_chart_count'));
+
+			var options = {
+				title: "Messages by day",
+				calendar: { cellSize: 20 },
+			};
+
+			chart.draw(dataTable, options);
+		}
+
+		google.setOnLoadCallback(drawChartCalendarFirstMsg);
+		function drawChartCalendarFirstMsg() {
+			var dataTable = new google.visualization.DataTable();
+			dataTable.addColumn({ type: 'date', id: 'Date' });
+			dataTable.addColumn({ type: 'number', id: 'Message Count' });
+			dataTable.addRows([
+				<?php
+					$firstMessageDay = $logStats->firstMsgOfDay();
+
+					$senders = [];
+					foreach ($firstMessageDay['messages'] as $message)
+					{
+						$senders[$message['sender']] = $message['p'];
+						echo " [ new Date({$message['y']}, {$message['m']}, {$message['d']}), {$message['p']} ], ";
+					}
+
+					//clear memory
+					unset($firstMessageDay);
+				?>
+			]);
+
+			var chart = new google.visualization.Calendar(document.getElementById('calendar_chart_first_msg'));
+
+			var options = {
+				title: "First message by day",
+				calendar: { cellSize: 20 }
+			};
+
+			chart.draw(dataTable, options);
+		}
 </script>
 </head>
 
 <body>
 <div id="hour_chart_div" style="width: 1300px; height: 700px;"></div>
 <div id="weekday_chart_div" style="width: 1300px; height: 700px;"></div>
+<div id="calendar_chart_count" style="width: 1300px; height: 400px;"></div>
+
+<?php
+	foreach ($senders as $sender => $value)
+	{
+		echo "<h2>{$sender} = {$value}</h2>";
+	}
+?>
+<div id="calendar_chart_first_msg" style="width: 1300px; height: 400px;"></div>
 
 <h1>Most used words</h1>
 
@@ -158,6 +228,5 @@ $logStats = new \lib\logStats($dbh);
 			</script>";
 		}
 	?>
-
 </body>
 </html>
